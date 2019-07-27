@@ -1,0 +1,40 @@
+language: julia
+os:
+  - linux
+julia:
+  - 1.0
+notifications:
+  email: false
+git:
+  depth: 99999999
+cache:
+  timeout: 1000
+  directories:
+    - downloads
+env:
+  global:
+    - BINARYBUILDER_DOWNLOADS_CACHE=downloads
+    - BINARYBUILDER_AUTOMATIC_APPLE=true
+sudo: required
+
+# Before anything else, get the latest versions of things
+before_script:
+  - julia -e 'using Pkg; Pkg.add(PackageSpec(url="https://github.com/JuliaPackaging/BinaryProvider.jl"))'
+  - julia -e 'using Pkg; Pkg.add(PackageSpec(url="https://github.com/JuliaPackaging/BinaryBuilder.jl")); Pkg.build()'
+
+script:
+  - julia build_tarballs.jl
+
+
+deploy:
+    provider: releases
+    api_key:
+        # Note; this api_key is only valid for ericphanson/test_GMP_Builder; you need
+        # to make your own: https://docs.travis-ci.com/user/deployment/releases/
+      secure: "JLuNMO2jgJbbJ46NxyiSHo9FL05bHudZr8Ousf1PHWMqre49PJiTO+/xvXOEnS9pISsrs/YXnxfSPcWbcDARU28AQNAlMbSQurcxkevgs4mheQb39/CakDkBmomBAX/xQUmJSX0ew7GYXUJ2z/XLQPwySK/2tf2xyOcRWaC/fC1AFx35l45E9muS4aER8wriIzDrOMFo3Kezw5MHSPhKV6gJPFC7nzHaZgFSLLWEH9ORk8RJPWDrCEuLRr5KEWzElSgRq02qgOJHIXQLwhm2bKj1ILOk9UvV/vnkDQxLPRlMJDSfkXcoKl4xx/wWGNVWOM8RDx3IpkGgYGiUxTpnuBJM72f3Du3wrDz8FfwAcQ/8z3V0EzhKEpH50N19KTN4XNBgSzfUFNyDN4oBjcL55zSqUjHwoJgBGkDWoDQHOLayM36zHvjSPA3XdIgFdejjC+PHp0T1ENPjJAMadKOmSYH52uPJcYtQTtUUnzv3318gv/hKx97Q8llLBAaDyHooaL73ah5VfUnNW7DTKElVvBpxScdlyiUa42eymiaIIzWu6+dxknOTu3w13yXxFEk4nGwxk2JaU4I0dXDq/jihWrROprNMzJE43qocL8AAQg30qajsKOH3e3OWxZAbawOy9VdUbD2W06Peh+nQvW/Mx1ysbQvDQOuLHdF9j1R7Ef4="
+    file_glob: true
+    file: products/*
+    skip_cleanup: true
+    on:
+        repo: ericphanson/test_GMP_Builder
+        tags: true
